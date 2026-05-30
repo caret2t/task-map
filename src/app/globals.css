@@ -5,13 +5,37 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #f5f5f5;
+  --surface-2: #efefef;
+  --border: #e5e7eb;
+  --muted: #6b7280;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --sidebar-bg: #f9fafb;
+  --sidebar-hover: #f3f4f6;
+  --sidebar-active: #e0e7ff;
+  --sidebar-active-text: #3730a3;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0f0f0f;
+    --foreground: #f5f5f5;
+    --surface: #1a1a1a;
+    --surface-2: #242424;
+    --border: #2d2d2d;
+    --muted: #9ca3af;
+    --primary: #60a5fa;
+    --primary-foreground: #0f172a;
+    --sidebar-bg: #111111;
+    --sidebar-hover: #1e1e1e;
+    --sidebar-active: #1e3a5f;
+    --sidebar-active-text: #93c5fd;
   }
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
@@ -19,4 +43,116 @@ body {
   background: var(--background);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Tiptap editor */
+.tiptap {
+  outline: none;
+  min-height: 200px;
+  padding: 8px 0;
+}
+
+.tiptap p {
+  margin: 0.25rem 0;
+}
+
+.tiptap h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.tiptap h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.tiptap h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.4rem 0 0.2rem;
+}
+
+.tiptap ul, .tiptap ol {
+  padding-left: 1.5rem;
+  margin: 0.25rem 0;
+}
+
+.tiptap code {
+  background: var(--surface-2);
+  border-radius: 3px;
+  padding: 0 3px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.875em;
+}
+
+.tiptap pre {
+  background: var(--surface-2);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  overflow-x: auto;
+}
+
+.tiptap pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.875rem;
+}
+
+.tiptap blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 1rem;
+  margin: 0.5rem 0;
+  color: var(--muted);
+}
+
+.tiptap hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0.75rem 0;
+}
+
+.tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.tiptap ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.tiptap ul[data-type="taskList"] li input[type="checkbox"] {
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--muted);
+  pointer-events: none;
+  height: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
 }

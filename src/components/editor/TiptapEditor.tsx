@@ -1,0 +1,57 @@
+"use client";
+
+import { useEffect } from "react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
+import Typography from "@tiptap/extension-typography";
+import Underline from "@tiptap/extension-underline";
+import Highlight from "@tiptap/extension-highlight";
+import { SlashCommandExtension } from "./SlashCommandMenu";
+
+interface TiptapEditorProps {
+  content: string;
+  onChange: (html: string) => void;
+  placeholder?: string;
+}
+
+export function TiptapEditor({ content, onChange, placeholder = "メモを入力... / でコマンド" }: TiptapEditorProps) {
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({ codeBlock: false }),
+      Placeholder.configure({ placeholder }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      Typography,
+      Underline,
+      Highlight,
+      SlashCommandExtension,
+    ],
+    content,
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+    editorProps: {
+      attributes: {
+        class: "tiptap",
+      },
+    },
+    immediatelyRender: false,
+  });
+
+  // Sync content when task changes
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content]);
+
+  return (
+    <div className="text-sm">
+      <EditorContent editor={editor} />
+    </div>
+  );
+}
