@@ -6,7 +6,6 @@ import { useUIStore } from "@/store/uiStore";
 import { useAllTasks } from "@/hooks/useTasks";
 import { useTaskStore } from "@/store/taskStore";
 import type { Task } from "@/types";
-import { Dialog } from "@radix-ui/react-dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 export function CommandPalette() {
@@ -40,7 +39,7 @@ export function CommandPalette() {
   };
 
   return (
-    <Dialog open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen}>
+    <DialogPrimitive.Root open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
         <DialogPrimitive.Content className="fixed left-1/2 top-[20%] z-50 -translate-x-1/2 w-full max-w-xl">
@@ -78,6 +77,6 @@ export function CommandPalette() {
           </Command>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
-    </Dialog>
+    </DialogPrimitive.Root>
   );
 }

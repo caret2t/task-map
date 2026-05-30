@@ -20,12 +20,13 @@ interface TiptapEditorProps {
 export function TiptapEditor({ content, onChange, placeholder = "メモを入力... / でコマンド" }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ codeBlock: false }),
+      // underline: false を指定して StarterKit 側の登録を無効化し、明示的に追加して重複を防ぐ
+      StarterKit.configure({ codeBlock: false, underline: false }),
       Placeholder.configure({ placeholder }),
       TaskList,
       TaskItem.configure({ nested: true }),
-      Typography,
       Underline,
+      Typography,
       Highlight,
       SlashCommandExtension,
     ],
