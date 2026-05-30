@@ -22,11 +22,11 @@ export function DialogContent({ className, children, ...props }: React.Component
     <DialogPrimitive.Portal>
       <DialogOverlay />
       <DialogPrimitive.Content
+        {...props}
         className={cn(
           "fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg rounded-lg bg-[var(--background)] p-6 shadow-xl",
           className
         )}
-        {...props}
       >
         {children}
         <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100">
@@ -43,4 +43,8 @@ export function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLD
 
 export function DialogTitle({ className, ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>) {
   return <DialogPrimitive.Title className={cn("text-lg font-semibold", className)} {...props} />;
+}
+
+export function DialogDescription({ className, ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>) {
+  return <DialogPrimitive.Description className={cn("text-sm text-[var(--muted)]", className)} {...props} />;
 }

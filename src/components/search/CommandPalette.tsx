@@ -42,7 +42,10 @@ export function CommandPalette() {
     <DialogPrimitive.Root open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
-        <DialogPrimitive.Content className="fixed left-1/2 top-[20%] z-50 -translate-x-1/2 w-full max-w-xl">
+        <DialogPrimitive.Content aria-describedby={undefined} className="fixed left-1/2 top-[20%] z-50 -translate-x-1/2 w-full max-w-xl">
+          {/* スクリーンリーダー向けタイトル・説明（視覚的には非表示） */}
+          <DialogPrimitive.Title className="sr-only">タスク検索</DialogPrimitive.Title>
+          <DialogPrimitive.Description className="sr-only">タスク名またはメモで検索して選択できます</DialogPrimitive.Description>
           <Command className="rounded-lg border border-[var(--border)] bg-[var(--background)] shadow-2xl overflow-hidden">
             <Command.Input
               value={search}

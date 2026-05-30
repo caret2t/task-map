@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useUIStore } from "@/store/uiStore";
 import { createTask } from "@/hooks/useTasks";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/Dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
@@ -24,6 +24,7 @@ export function QuickCaptureModal() {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>クイックキャプチャ</DialogTitle>
+          <DialogDescription className="sr-only">タスクのタイトルを入力してインボックスに追加します</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           <Input
