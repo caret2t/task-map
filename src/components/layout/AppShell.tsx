@@ -11,13 +11,12 @@ import { FocusMode } from "@/components/focus/FocusMode";
 import { NotificationSetup } from "./NotificationSetup";
 import { useTaskStore } from "@/store/taskStore";
 import { useUIStore, type ThemeMode } from "@/store/uiStore";
-import { Sun, Moon, Monitor, X, Menu } from "lucide-react";
+import { Sun, Moon, Monitor } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const THEME_CYCLE: ThemeMode[] = ["light", "system", "dark"];
 const THEME_ICONS: Record<ThemeMode, React.ElementType> = { light: Sun, system: Monitor, dark: Moon };
 
-// モバイル用シングルトグル
 function MobileThemeToggle() {
   const { theme, setTheme } = useUIStore();
   const Icon = THEME_ICONS[theme];
@@ -63,31 +62,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <div className="flex h-screen overflow-hidden bg-[var(--background)]">
-        {/* Desktop Sidebar */}
+        {/* サイドバー：デスクトップのみ */}
         <div className={cn("hidden lg:block transition-all duration-200 flex-shrink-0", sidebarOpen ? "w-64" : "w-0 overflow-hidden")}>
           <Sidebar />
         </div>
 
-        {/* Mobile Sidebar Overlay — ボトムナビ(h-16)分上に止める */}
-        {sidebarOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-0 z-40 flex" style={{ bottom: "calc(4rem + env(safe-area-inset-bottom))" }}>
-            <div className="w-64 relative z-50 h-full">
-              <Sidebar />
-            </div>
-            <div className="flex-1 bg-black/30" onClick={toggleSidebar} />
-          </div>
-        )}
-
         {/* Main content area */}
         <div className="flex flex-1 overflow-hidden flex-col">
-          {/* Mobile header */}
+          {/* モバイルヘッダー：ロゴ＋テーマトグルのみ（ハンバーガー廃止） */}
           <div className="lg:hidden flex-shrink-0 bg-[var(--background)] border-b border-[var(--border)] flex items-center justify-between px-4 h-12 z-30">
-            <button
-              onClick={toggleSidebar}
-              className="w-8 h-8 flex items-center justify-center rounded-xl bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
-            >
-              {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            </button>
             <div className="flex items-center gap-1.5">
               <div className="w-5 h-5 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                 <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 16 16">
@@ -99,14 +82,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <MobileThemeToggle />
           </div>
 
-          {/* 3-column layout */}
+          {/* コンテンツ */}
           <div className="flex flex-1 overflow-hidden">
-            {/* Task list area */}
             <main className="flex-1 flex flex-col overflow-hidden border-r border-[var(--border)] mb-16 lg:mb-0">
               {children}
             </main>
-
-            {/* Right detail pane (desktop, shown when task selected) */}
             {selectedTaskId && (
               <div className="hidden lg:block flex-shrink-0">
                 <TaskDetailPane />
@@ -115,13 +95,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* Overlays */}
         <CommandPalette />
         <FocusMode />
         <MobileTaskSheet />
         <NotificationSetup />
-
-        {/* Mobile nav */}
         <MobileNav />
       </div>
     </ThemeProvider>

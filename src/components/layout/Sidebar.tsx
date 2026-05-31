@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Inbox, CalendarDays, Calendar, Search,
   Folder, Globe, BookOpen, Archive, Settings, Tag,
-  ChevronDown, Sun, Moon, Monitor,
+  ChevronDown, ChevronRight, Sun, Moon, Monitor,
   Plus, MoreHorizontal, Pencil, Trash2, ArchiveIcon,
 } from "lucide-react";
 import type { ThemeMode } from "@/store/uiStore";
@@ -24,93 +24,78 @@ const smartLists = [
   { href: "/upcoming", icon: Calendar,    label: "近日" },
 ];
 
-// スマートリスト・タグ等の通常ナビアイテム
+// 共通NavItemスタイル（スマートリストもPARAも全て同じ）
+const NAV_BASE = "flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-sm transition-all duration-150 relative";
+const NAV_ACTIVE = "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-text)] font-medium";
+const NAV_INACTIVE = "text-[var(--foreground-2)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)] hover:translate-x-0.5";
+
+function ActiveBar() {
+  return <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-[var(--sidebar-active-border)]" />;
+}
+
+// 通常ナビアイテム（スマートリスト・タグなど）
 function NavItem({ href, icon: Icon, label, active, indent = false }: {
   href: string; icon: React.ElementType; label: string; active?: boolean; indent?: boolean;
 }) {
   return (
-    <Link
-      href={href}
-      className={cn(
-        "group flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-sm transition-all duration-150 relative",
-        indent && "pl-6",
-        active
-          ? "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-text)] font-medium"
-          : "text-[var(--foreground-2)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)] hover:translate-x-0.5"
-      )}
-    >
-      {active && (
-        <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-[var(--sidebar-active-border)]" />
-      )}
+    <Link href={href} className={cn(NAV_BASE, active ? NAV_ACTIVE : NAV_INACTIVE, indent && "pl-7")}>
+      {active && <ActiveBar />}
       <Icon className="w-[15px] h-[15px] flex-shrink-0" />
       <span className="truncate">{label}</span>
     </Link>
   );
 }
 
-// PARAセクション共通スタイル（プロジェクト/エリア/リソース/アーカイブ全て同じ見た目）
-const PARA_BASE = "flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-sm transition-all duration-150";
-const PARA_INACTIVE = "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]";
-const PARA_ACTIVE = "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-text)] font-medium";
-
-// プロジェクト/エリア：トグル付きセクション
-function ParaExpandSection({ label, icon: Icon, open, onToggle, onAdd, children }: {
-  label: string;
-  icon: React.ElementType;
-  open: boolean;
-  onToggle: () => void;
-  onAdd?: () => void;
-  children?: React.ReactNode;
+// PARAセクション（プロジェクト/エリア）：NavItemと同スタイル＋chevron＋「+」ボタン
+function ParaSection({ label, icon: Icon, open, onToggle, onAdd, children }: {
+  label: string; icon: React.ElementType; open: boolean;
+  onToggle: () => void; onAdd?: () => void; children?: React.ReactNode;
 }) {
   return (
     <div>
       <div className="group/section flex items-center">
         <button
           onClick={onToggle}
-          className={cn("flex flex-1 items-center gap-2.5 px-3 py-[7px] rounded-lg text-sm transition-all duration-150 text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]")}
+          className={cn(NAV_BASE, NAV_INACTIVE, "flex-1")}
         >
           <Icon className="w-[15px] h-[15px] flex-shrink-0" />
-          <span className="flex-1 text-left font-medium">{label}</span>
-          <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", !open && "-rotate-90")} />
+          <span className="flex-1 text-left">{label}</span>
+          {open
+            ? <ChevronDown className="w-3 h-3 flex-shrink-0" />
+            : <ChevronRight className="w-3 h-3 flex-shrink-0" />}
         </button>
         {onAdd && (
           <button
             onClick={onAdd}
-            className="opacity-0 group-hover/section:opacity-100 p-1 rounded-md hover:bg-[var(--sidebar-hover)] text-[var(--muted)] hover:text-[var(--foreground)] transition-all"
+            className="opacity-0 group-hover/section:opacity-100 p-1 mr-1 rounded-md hover:bg-[var(--sidebar-hover)] text-[var(--muted)] hover:text-[var(--foreground)] transition-all"
             title="追加"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
-      {open && <div className="mt-0.5 space-y-0.5 pb-0.5">{children}</div>}
+      {open && <div className="space-y-0.5 pb-0.5">{children}</div>}
     </div>
   );
 }
 
-// リソース/アーカイブ：直接遷移するPARAアイテム（同じ視覚スタイル）
-function ParaLinkItem({ href, icon: Icon, label, active }: {
+// PARAリンク（リソース/アーカイブ）：NavItemと完全同スタイル・chevronなし
+function ParaLink({ href, icon: Icon, label, active }: {
   href: string; icon: React.ElementType; label: string; active: boolean;
 }) {
   return (
-    <Link
-      href={href}
-      className={cn(PARA_BASE, active ? PARA_ACTIVE : PARA_INACTIVE, "relative")}
-    >
-      {active && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-[var(--sidebar-active-border)]" />}
+    <Link href={href} className={cn(NAV_BASE, active ? NAV_ACTIVE : NAV_INACTIVE)}>
+      {active && <ActiveBar />}
       <Icon className="w-[15px] h-[15px] flex-shrink-0" />
-      <span className="flex-1 font-medium">{label}</span>
+      <span className="truncate">{label}</span>
     </Link>
   );
 }
 
 // プロジェクト/エリアのサブアイテム
 function ProjectSubItem({ project, active, onEdit, onDelete, onArchive }: {
-  project: Project;
-  active: boolean;
-  onEdit: () => void;
-  onDelete: () => void;
-  onArchive: () => void;
+  project: Project; active: boolean;
+  onEdit: () => void; onDelete: () => void; onArchive: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -120,15 +105,15 @@ function ProjectSubItem({ project, active, onEdit, onDelete, onArchive }: {
       <Link
         href={`/project/${project.id}`}
         className={cn(
-          "flex items-center gap-2.5 px-3 pl-7 py-[6px] rounded-lg text-sm transition-all duration-150 relative",
+          "flex items-center gap-2 pl-8 pr-3 py-[6px] rounded-lg text-[13px] transition-all duration-150 relative",
           active
             ? "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-text)] font-medium"
             : "text-[var(--foreground-2)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)] hover:translate-x-0.5"
         )}
       >
         {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-[var(--sidebar-active-border)]" />}
-        <span className="text-[14px] leading-none flex-shrink-0">{project.icon}</span>
-        <span className="truncate flex-1 text-[13px]">{project.name}</span>
+        <span className="text-[13px] leading-none flex-shrink-0">{project.icon}</span>
+        <span className="truncate flex-1">{project.name}</span>
       </Link>
       <button
         onClick={e => { e.preventDefault(); setMenuOpen(v => !v); }}
@@ -139,10 +124,7 @@ function ProjectSubItem({ project, active, onEdit, onDelete, onArchive }: {
       {menuOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-          <div
-            ref={menuRef}
-            className="absolute right-0 top-full mt-0.5 z-50 w-36 bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-lg py-1 text-sm"
-          >
+          <div ref={menuRef} className="absolute right-0 top-full mt-0.5 z-50 w-36 bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-lg py-1 text-sm">
             <button onClick={() => { setMenuOpen(false); onEdit(); }} className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-[var(--sidebar-hover)] text-[var(--foreground)]">
               <Pencil className="w-3.5 h-3.5" /> 編集
             </button>
@@ -174,7 +156,7 @@ function SidebarThemeToggle() {
   return (
     <button
       onClick={next}
-      className="flex w-full items-center gap-2.5 px-3 py-[7px] rounded-lg text-sm transition-all duration-150 text-[var(--foreground-2)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+      className={cn(NAV_BASE, NAV_INACTIVE)}
       title={`外観: ${THEME_LABELS[theme]}`}
     >
       <Icon className="w-[15px] h-[15px] flex-shrink-0" />
@@ -193,12 +175,7 @@ function SectionLabel({ label }: { label: string }) {
   );
 }
 
-interface SidebarProps {
-  /** モバイルのボトムナビ分の余白を追加するか */
-  mobileBottomPad?: boolean;
-}
-
-export function Sidebar({ mobileBottomPad = false }: SidebarProps) {
+export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { setCommandPaletteOpen } = useUIStore();
@@ -236,7 +213,7 @@ export function Sidebar({ mobileBottomPad = false }: SidebarProps) {
 
   return (
     <div className="w-64 flex-shrink-0 bg-[var(--sidebar-bg)] border-r border-[var(--border)] flex flex-col h-full">
-      {/* Brand header */}
+      {/* Brand */}
       <div className="px-4 py-4 flex-shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm flex-shrink-0">
@@ -256,7 +233,7 @@ export function Sidebar({ mobileBottomPad = false }: SidebarProps) {
           ))}
           <button
             onClick={() => setCommandPaletteOpen(true)}
-            className="group flex w-full items-center gap-2.5 px-3 py-[7px] rounded-lg text-sm transition-all duration-150 text-[var(--foreground-2)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)] hover:translate-x-0.5"
+            className={cn(NAV_BASE, NAV_INACTIVE, "w-full")}
           >
             <Search className="w-[15px] h-[15px] flex-shrink-0" />
             <span>検索</span>
@@ -264,22 +241,19 @@ export function Sidebar({ mobileBottomPad = false }: SidebarProps) {
           </button>
         </div>
 
-        {/* PARAライブラリ：4カテゴリ全て同じ視覚スタイル */}
+        {/* PARAライブラリ：全4項目を同一スタイルで統一 */}
         <div className="px-2">
           <SectionLabel label="ライブラリ" />
           <div className="space-y-0.5">
             {/* プロジェクト */}
-            <ParaExpandSection
-              label="プロジェクト"
-              icon={Folder}
-              open={showProjects}
-              onToggle={() => setShowProjects(v => !v)}
+            <ParaSection
+              label="プロジェクト" icon={Folder}
+              open={showProjects} onToggle={() => setShowProjects(v => !v)}
               onAdd={() => openCreate("projects")}
             >
               {projects.map(p => (
                 <ProjectSubItem
-                  key={p.id}
-                  project={p}
+                  key={p.id} project={p}
                   active={pathname === `/project/${p.id}`}
                   onEdit={() => openEdit(p)}
                   onDelete={() => handleDelete(p)}
@@ -289,25 +263,22 @@ export function Sidebar({ mobileBottomPad = false }: SidebarProps) {
               {projects.length === 0 && (
                 <button
                   onClick={() => openCreate("projects")}
-                  className="flex w-full items-center gap-1.5 pl-7 pr-3 py-1.5 text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                  className="flex w-full items-center gap-1.5 pl-8 pr-3 py-1.5 text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
                 >
                   <Plus className="w-3 h-3" />新規プロジェクト
                 </button>
               )}
-            </ParaExpandSection>
+            </ParaSection>
 
             {/* エリア */}
-            <ParaExpandSection
-              label="エリア"
-              icon={Globe}
-              open={showAreas}
-              onToggle={() => setShowAreas(v => !v)}
+            <ParaSection
+              label="エリア" icon={Globe}
+              open={showAreas} onToggle={() => setShowAreas(v => !v)}
               onAdd={() => openCreate("areas")}
             >
               {areas.map(a => (
                 <ProjectSubItem
-                  key={a.id}
-                  project={a}
+                  key={a.id} project={a}
                   active={pathname === `/area/${a.id}`}
                   onEdit={() => openEdit(a)}
                   onDelete={() => handleDelete(a)}
@@ -317,16 +288,16 @@ export function Sidebar({ mobileBottomPad = false }: SidebarProps) {
               {areas.length === 0 && (
                 <button
                   onClick={() => openCreate("areas")}
-                  className="flex w-full items-center gap-1.5 pl-7 pr-3 py-1.5 text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                  className="flex w-full items-center gap-1.5 pl-8 pr-3 py-1.5 text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
                 >
                   <Plus className="w-3 h-3" />新規エリア
                 </button>
               )}
-            </ParaExpandSection>
+            </ParaSection>
 
-            {/* リソース・アーカイブ：プロジェクト/エリアと同じ視覚スタイルの直接リンク */}
-            <ParaLinkItem href="/resources" icon={BookOpen} label="リソース" active={pathname === "/resources"} />
-            <ParaLinkItem href="/archives" icon={Archive} label="アーカイブ" active={pathname === "/archives"} />
+            {/* リソース・アーカイブ：NavItemと同スタイルの直接リンク */}
+            <ParaLink href="/resources" icon={BookOpen} label="リソース" active={pathname === "/resources"} />
+            <ParaLink href="/archives" icon={Archive} label="アーカイブ" active={pathname === "/archives"} />
           </div>
         </div>
 
@@ -335,18 +306,16 @@ export function Sidebar({ mobileBottomPad = false }: SidebarProps) {
           <div className="px-2">
             <SectionLabel label="タグ" />
             <div className="space-y-0.5">
-              <ParaExpandSection
-                label="すべてのタグ"
-                icon={Tag}
-                open={showTags}
-                onToggle={() => setShowTags(v => !v)}
+              <ParaSection
+                label="すべてのタグ" icon={Tag}
+                open={showTags} onToggle={() => setShowTags(v => !v)}
               >
                 {tags.map(tag => (
                   <Link
                     key={tag.id}
                     href={`/tags/${encodeURIComponent(tag.name)}`}
                     className={cn(
-                      "flex w-full items-center gap-2.5 px-3 pl-7 py-[6px] rounded-lg text-[13px] transition-all duration-150 hover:translate-x-0.5",
+                      "flex w-full items-center gap-2 pl-8 pr-3 py-[6px] rounded-lg text-[13px] transition-all duration-150 hover:translate-x-0.5",
                       pathname === `/tags/${encodeURIComponent(tag.name)}`
                         ? "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-text)] font-medium"
                         : "text-[var(--foreground-2)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
@@ -358,17 +327,16 @@ export function Sidebar({ mobileBottomPad = false }: SidebarProps) {
                 ))}
                 <Link
                   href="/tags"
-                  className="flex w-full items-center gap-1.5 pl-7 pr-3 py-1.5 text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                  className="flex w-full items-center gap-1.5 pl-8 pr-3 py-1.5 text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
                 >
                   <Tag className="w-3 h-3" />タグを管理...
                 </Link>
-              </ParaExpandSection>
+              </ParaSection>
             </div>
           </div>
         )}
 
-        {/* モバイルボトムナビ分の余白 */}
-        <div className={mobileBottomPad ? "h-20" : "h-4"} />
+        <div className="h-4" />
       </ScrollArea>
 
       {/* Footer */}
