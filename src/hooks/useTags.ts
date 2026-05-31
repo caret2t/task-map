@@ -21,3 +21,16 @@ export async function createTag(partial: Partial<Tag> & { name: string }): Promi
   await db.tags.add(tag);
   return tag;
 }
+
+export async function updateTag(id: string, changes: Partial<Tag>) {
+  await db.tags.update(id, changes);
+}
+
+export async function deleteTag(id: string, tagName: string) {
+  await db.transaction("rw", db.tags, db.tasks, async () => {
+    await db.tasks.toCollection().modify(task => {
+      task.tags = task.tags.filter((t: string) => t !== tagName);
+    });
+    await db.tags.delete(id);
+  });
+}

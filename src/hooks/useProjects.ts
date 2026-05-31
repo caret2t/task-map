@@ -45,3 +45,22 @@ export async function createProject(partial: Partial<Project> & { name: string }
   await db.projects.add(project);
   return project;
 }
+
+export async function updateProject(id: string, changes: Partial<Project>) {
+  await db.projects.update(id, { ...changes, updatedAt: new Date() });
+}
+
+export async function deleteProject(id: string) {
+  await db.transaction("rw", db.projects, db.tasks, async () => {
+    await db.tasks.where("projectId").equals(id).modify({ projectId: null, status: "inbox" });
+    await db.projects.delete(id);
+  });
+}
+
+export async function archiveProject(id: string) {
+  await db.projects.update(id, { status: "archived", paraCategory: "archives", updatedAt: new Date() });
+}
+
+export async function restoreProject(id: string) {
+  await db.projects.update(id, { status: "active", paraCategory: "projects", updatedAt: new Date() });
+}

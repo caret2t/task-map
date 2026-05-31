@@ -200,3 +200,41 @@ export function useSubtasks(parentId: string | null) {
 export function useAllTasks() {
   return useLiveQuery(() => db.tasks.toArray(), [], [] as Task[]);
 }
+
+export function useArchivedTasks() {
+  return useLiveQuery(
+    () => db.tasks.where("status").equals("archived").reverse().sortBy("updatedAt"),
+    [],
+    [] as Task[]
+  );
+}
+
+export function useOverdueTasks() {
+  const today = startOfDay(new Date());
+  return useLiveQuery(
+    async () => {
+      const tasks = await db.tasks
+        .where("status").notEqual("done")
+        .and(t => t.status !== "archived")
+        .toArray();
+      return tasks.filter(t => {
+        const d = t.scheduledDate ?? t.dueDate;
+        return d && new Date(d) < today;
+      });
+    },
+    [],
+    [] as Task[]
+  );
+}
+
+export async function archiveTask(id: string) {
+  await db.tasks.update(id, { status: "archived", updatedAt: new Date() });
+}
+
+export async function restoreTask(id: string) {
+  await db.tasks.update(id, { status: "inbox", updatedAt: new Date() });
+}
+
+export async function deleteAllArchived() {
+  await db.tasks.where("status").equals("archived").delete();
+}
