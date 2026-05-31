@@ -9,6 +9,7 @@ import TaskItem from "@tiptap/extension-task-item";
 import Typography from "@tiptap/extension-typography";
 import Highlight from "@tiptap/extension-highlight";
 import { SlashCommandExtension } from "./SlashCommandMenu";
+import { AtDateMention } from "./AtMentionExtension";
 
 interface TiptapEditorProps {
   content: string;
@@ -27,6 +28,7 @@ export function TiptapEditor({ content, onChange, placeholder = "メモを入力
     Typography,
     Highlight,
     SlashCommandExtension,
+    AtDateMention,
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [placeholder]);
 

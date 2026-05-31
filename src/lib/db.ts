@@ -25,6 +25,23 @@ class TaskMapDB extends Dexie {
         if (task.estimatedMinutes === undefined) task.estimatedMinutes = null;
       });
     });
+    this.version(3).stores({
+      tasks:
+        "id, status, projectId, areaId, dueDate, scheduledDate, priority, workType, parentId, sortOrder, createdAt, updatedAt, userId",
+      projects: "id, paraCategory, status, createdAt, userId",
+      tags: "id, name, userId, createdAt",
+    }).upgrade(async (tx) => {
+      // Sort existing tasks by createdAt and assign distinct sortOrder values
+      const allTasks = await tx.table("tasks").orderBy("createdAt").toArray();
+      for (let i = 0; i < allTasks.length; i++) {
+        if (allTasks[i].recurrence === undefined) allTasks[i].recurrence = null;
+        if (allTasks[i].sortOrder === undefined) allTasks[i].sortOrder = i;
+        await tx.table("tasks").update(allTasks[i].id, {
+          recurrence: allTasks[i].recurrence,
+          sortOrder: i,
+        });
+      }
+    });
   }
 }
 

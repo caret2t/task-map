@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
+import { GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/types";
 import { PriorityBorder } from "./PriorityBadge";
@@ -11,6 +12,8 @@ import { useTaskStore } from "@/store/taskStore";
 import { Badge } from "@/components/ui/Badge";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const WORK_TYPE_LABELS: Record<string, string> = {
   focus: "🎯 集中",
@@ -29,25 +32,43 @@ export function TaskItem({ task }: TaskItemProps) {
   const isSelected = selectedTaskId === task.id;
   const isDone = task.status === "done";
 
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: task.id });
+
   const project = useLiveQuery<import("@/types").Project | undefined>(
     () => task.projectId ? db.projects.get(task.projectId) : Promise.resolve(undefined),
     [task.projectId]
   );
 
+  const doneSubtasks = task.subtasks.filter(s => s.completed).length;
+  const totalSubtasks = task.subtasks.length;
+
   return (
     <motion.div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
       layout
       initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: isDragging ? 0.5 : 1, y: 0 }}
       exit={{ opacity: 0, y: -4 }}
       className={cn(
         "relative flex items-start gap-3 px-4 py-2.5 cursor-pointer rounded-lg group transition-colors",
         isSelected
           ? "bg-[var(--sidebar-active)]"
-          : "hover:bg-[var(--sidebar-hover)]"
+          : "hover:bg-[var(--sidebar-hover)]",
+        isDragging && "shadow-lg z-50"
       )}
       onClick={() => setSelectedTask(task)}
     >
+      {/* Drag handle */}
+      <button
+        {...attributes}
+        {...listeners}
+        onClick={(e) => e.stopPropagation()}
+        className="absolute left-0 top-1/2 -translate-y-1/2 pl-1 opacity-0 group-hover:opacity-100 text-[var(--muted)] cursor-grab active:cursor-grabbing"
+      >
+        <GripVertical className="w-3.5 h-3.5" />
+      </button>
       <PriorityBorder priority={task.priority} />
 
       {/* Checkbox */}
@@ -112,6 +133,13 @@ export function TaskItem({ task }: TaskItemProps) {
           {task.estimatedMinutes && (
             <span className="text-xs text-[var(--muted)]">
               ⏱ {task.estimatedMinutes < 60 ? `${task.estimatedMinutes}分` : `${Math.floor(task.estimatedMinutes / 60)}h`}
+            </span>
+          )}
+
+          {/* Subtask progress */}
+          {totalSubtasks > 0 && (
+            <span className="text-xs text-[var(--muted)]">
+              ☑ {doneSubtasks}/{totalSubtasks}
             </span>
           )}
 

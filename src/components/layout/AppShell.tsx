@@ -6,6 +6,8 @@ import { MobileNav } from "./MobileNav";
 import { ThemeProvider } from "./ThemeProvider";
 import { CommandPalette } from "@/components/search/CommandPalette";
 import { TaskDetailPane } from "@/components/task/TaskDetailPane";
+import { FocusMode } from "@/components/focus/FocusMode";
+import { NotificationSetup } from "./NotificationSetup";
 import { useTaskStore } from "@/store/taskStore";
 import { useUIStore, type ThemeMode } from "@/store/uiStore";
 import { Sun, Moon, Monitor, X, Menu } from "lucide-react";
@@ -112,6 +114,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Overlays */}
         <CommandPalette />
+        <FocusMode />
+        <NotificationSetup />
 
         {/* Mobile nav */}
         <MobileNav />

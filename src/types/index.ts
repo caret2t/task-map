@@ -1,5 +1,15 @@
 export type WorkType = "focus" | "shallow" | "meeting" | "admin" | "review" | null;
 
+export type RecurrenceFrequency = "daily" | "weekly" | "monthly" | "yearly" | "custom";
+
+export interface Recurrence {
+  frequency: RecurrenceFrequency;
+  interval: number;        // 毎N日/週/月
+  daysOfWeek?: number[];   // 0=日〜6=土 (weekly用)
+  dayOfMonth?: number;     // 1-31 (monthly用)
+  endDate?: Date | null;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -16,6 +26,8 @@ export interface Task {
   subtasks: Subtask[];
   workType: WorkType;
   estimatedMinutes: number | null;
+  recurrence: Recurrence | null;
+  sortOrder: number;
   createdAt: Date;
   updatedAt: Date;
   userId: string;

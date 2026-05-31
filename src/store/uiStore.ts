@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 
 type ActiveView = "inbox" | "today" | "upcoming" | "search" | "resources" | "archives" | "project" | "area";
 export type ThemeMode = "system" | "light" | "dark";
+export type ProjectViewMode = "list" | "board" | "calendar";
 
 interface UIState {
   sidebarOpen: boolean;
@@ -13,6 +14,9 @@ interface UIState {
   quickCaptureOpen: boolean;
   inlineAddOpen: boolean;
   theme: ThemeMode;
+  focusModeOpen: boolean;
+  focusTaskId: string | null;
+  projectViewMode: ProjectViewMode;
   setSidebarOpen: (open: boolean) => void;
   toggleSidebar: () => void;
   setActiveView: (view: ActiveView, id?: string) => void;
@@ -20,6 +24,9 @@ interface UIState {
   setQuickCaptureOpen: (open: boolean) => void;
   setInlineAddOpen: (open: boolean) => void;
   setTheme: (theme: ThemeMode) => void;
+  enterFocusMode: (taskId: string) => void;
+  exitFocusMode: () => void;
+  setProjectViewMode: (mode: ProjectViewMode) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -33,6 +40,9 @@ export const useUIStore = create<UIState>()(
       quickCaptureOpen: false,
       inlineAddOpen: false,
       theme: "system",
+      focusModeOpen: false,
+      focusTaskId: null,
+      projectViewMode: "list",
 
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
@@ -46,6 +56,9 @@ export const useUIStore = create<UIState>()(
       setQuickCaptureOpen: (open) => set({ quickCaptureOpen: open }),
       setInlineAddOpen: (open) => set({ inlineAddOpen: open }),
       setTheme: (theme) => set({ theme }),
+      enterFocusMode: (taskId) => set({ focusModeOpen: true, focusTaskId: taskId }),
+      exitFocusMode: () => set({ focusModeOpen: false, focusTaskId: null }),
+      setProjectViewMode: (mode) => set({ projectViewMode: mode }),
     }),
     {
       name: "taskmap-ui",

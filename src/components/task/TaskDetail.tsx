@@ -9,9 +9,13 @@ import { useTaskStore } from "@/store/taskStore";
 import { TiptapEditor } from "@/components/editor/TiptapEditor";
 import { DatePicker } from "./DatePicker";
 import { PriorityBadge } from "./PriorityBadge";
+import { SubtaskList } from "./SubtaskList";
+import { RecurrenceSelector } from "./RecurrenceSelector";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { ScrollArea } from "@/components/ui/ScrollArea";
+import { useUIStore } from "@/store/uiStore";
+import { Focus } from "lucide-react";
 
 interface TaskDetailProps {
   task: Task;
@@ -19,6 +23,7 @@ interface TaskDetailProps {
 
 export function TaskDetail({ task }: TaskDetailProps) {
   const { setSelectedTask } = useTaskStore();
+  const { enterFocusMode } = useUIStore();
   const [title, setTitle] = useState(task.title);
   const [tagInput, setTagInput] = useState("");
 
@@ -80,9 +85,14 @@ export function TaskDetail({ task }: TaskDetailProps) {
             className="flex-1 text-base font-semibold bg-transparent resize-none outline-none leading-snug"
             rows={2}
           />
-          <Button variant="ghost" size="icon" onClick={() => setSelectedTask(null)} className="flex-shrink-0">
-            <X className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <Button variant="ghost" size="icon" onClick={() => enterFocusMode(task.id)} title="フォーカスモード">
+              <Focus className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setSelectedTask(null)}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Properties */}
@@ -167,6 +177,19 @@ export function TaskDetail({ task }: TaskDetailProps) {
               />
             </div>
           </div>
+          {/* Recurrence — Phase 2 */}
+          <div className="flex items-center gap-2">
+            <span className="text-[var(--muted)] w-20 flex-shrink-0">繰り返し</span>
+            <RecurrenceSelector
+              value={task.recurrence ?? null}
+              onChange={(r) => save({ recurrence: r })}
+            />
+          </div>
+        </div>
+
+        {/* Subtasks */}
+        <div className="border-t border-[var(--border)] pt-3">
+          <SubtaskList task={task} />
         </div>
 
         {/* Divider */}
