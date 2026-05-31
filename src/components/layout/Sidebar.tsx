@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Inbox, CalendarDays, Calendar, Search,
   Folder, Globe, BookOpen, Archive, Settings, Tag,
-  ChevronRight, ChevronDown, Sun, Moon, Monitor,
+  ChevronDown, Sun, Moon, Monitor,
   Plus, MoreHorizontal, Pencil, Trash2, ArchiveIcon,
 } from "lucide-react";
 import type { ThemeMode } from "@/store/uiStore";
@@ -24,6 +24,7 @@ const smartLists = [
   { href: "/upcoming", icon: Calendar,    label: "近日" },
 ];
 
+// スマートリスト・タグ等の通常ナビアイテム
 function NavItem({ href, icon: Icon, label, active, indent = false }: {
   href: string; icon: React.ElementType; label: string; active?: boolean; indent?: boolean;
 }) {
@@ -44,6 +45,118 @@ function NavItem({ href, icon: Icon, label, active, indent = false }: {
       <Icon className="w-[15px] h-[15px] flex-shrink-0" />
       <span className="truncate">{label}</span>
     </Link>
+  );
+}
+
+// PARAセクション共通スタイル（プロジェクト/エリア/リソース/アーカイブ全て同じ見た目）
+const PARA_BASE = "flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-sm transition-all duration-150";
+const PARA_INACTIVE = "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]";
+const PARA_ACTIVE = "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-text)] font-medium";
+
+// プロジェクト/エリア：トグル付きセクション
+function ParaExpandSection({ label, icon: Icon, open, onToggle, onAdd, children }: {
+  label: string;
+  icon: React.ElementType;
+  open: boolean;
+  onToggle: () => void;
+  onAdd?: () => void;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div className="group/section flex items-center">
+        <button
+          onClick={onToggle}
+          className={cn("flex flex-1 items-center gap-2.5 px-3 py-[7px] rounded-lg text-sm transition-all duration-150 text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]")}
+        >
+          <Icon className="w-[15px] h-[15px] flex-shrink-0" />
+          <span className="flex-1 text-left font-medium">{label}</span>
+          <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", !open && "-rotate-90")} />
+        </button>
+        {onAdd && (
+          <button
+            onClick={onAdd}
+            className="opacity-0 group-hover/section:opacity-100 p-1 rounded-md hover:bg-[var(--sidebar-hover)] text-[var(--muted)] hover:text-[var(--foreground)] transition-all"
+            title="追加"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+      {open && <div className="mt-0.5 space-y-0.5 pb-0.5">{children}</div>}
+    </div>
+  );
+}
+
+// リソース/アーカイブ：直接遷移するPARAアイテム（同じ視覚スタイル）
+function ParaLinkItem({ href, icon: Icon, label, active }: {
+  href: string; icon: React.ElementType; label: string; active: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(PARA_BASE, active ? PARA_ACTIVE : PARA_INACTIVE, "relative")}
+    >
+      {active && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-[var(--sidebar-active-border)]" />}
+      <Icon className="w-[15px] h-[15px] flex-shrink-0" />
+      <span className="flex-1 font-medium">{label}</span>
+    </Link>
+  );
+}
+
+// プロジェクト/エリアのサブアイテム
+function ProjectSubItem({ project, active, onEdit, onDelete, onArchive }: {
+  project: Project;
+  active: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+  onArchive: () => void;
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <div className="group/item relative">
+      <Link
+        href={`/project/${project.id}`}
+        className={cn(
+          "flex items-center gap-2.5 px-3 pl-7 py-[6px] rounded-lg text-sm transition-all duration-150 relative",
+          active
+            ? "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-text)] font-medium"
+            : "text-[var(--foreground-2)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)] hover:translate-x-0.5"
+        )}
+      >
+        {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-[var(--sidebar-active-border)]" />}
+        <span className="text-[14px] leading-none flex-shrink-0">{project.icon}</span>
+        <span className="truncate flex-1 text-[13px]">{project.name}</span>
+      </Link>
+      <button
+        onClick={e => { e.preventDefault(); setMenuOpen(v => !v); }}
+        className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 p-1 rounded-md hover:bg-[var(--border-2)] text-[var(--muted)] hover:text-[var(--foreground)] transition-all"
+      >
+        <MoreHorizontal className="w-3.5 h-3.5" />
+      </button>
+      {menuOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+          <div
+            ref={menuRef}
+            className="absolute right-0 top-full mt-0.5 z-50 w-36 bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-lg py-1 text-sm"
+          >
+            <button onClick={() => { setMenuOpen(false); onEdit(); }} className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-[var(--sidebar-hover)] text-[var(--foreground)]">
+              <Pencil className="w-3.5 h-3.5" /> 編集
+            </button>
+            <button onClick={() => { setMenuOpen(false); onArchive(); }} className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-[var(--sidebar-hover)] text-[var(--foreground)]">
+              <ArchiveIcon className="w-3.5 h-3.5" /> アーカイブ
+            </button>
+            <div className="my-1 h-px bg-[var(--border)]" />
+            <button onClick={() => { setMenuOpen(false); onDelete(); }} className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500">
+              <Trash2 className="w-3.5 h-3.5" /> 削除
+            </button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -80,90 +193,12 @@ function SectionLabel({ label }: { label: string }) {
   );
 }
 
-function CollapseButton({ label, icon: Icon, open, onToggle, onAdd }: {
-  label: string; icon: React.ElementType; open: boolean; onToggle: () => void; onAdd?: () => void;
-}) {
-  return (
-    <div className="group/section flex w-full items-center gap-0">
-      <button
-        onClick={onToggle}
-        className="group flex flex-1 items-center gap-2.5 px-3 py-[7px] rounded-lg text-sm transition-all duration-150 text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-      >
-        <Icon className="w-[15px] h-[15px] flex-shrink-0" />
-        <span className="flex-1 text-left">{label}</span>
-        {open
-          ? <ChevronDown className="w-3 h-3 transition-transform" />
-          : <ChevronRight className="w-3 h-3 transition-transform" />}
-      </button>
-      {onAdd && (
-        <button
-          onClick={onAdd}
-          className="opacity-0 group-hover/section:opacity-100 p-1 rounded-md hover:bg-[var(--sidebar-hover)] text-[var(--muted)] hover:text-[var(--foreground)] transition-all"
-          title="追加"
-        >
-          <Plus className="w-3.5 h-3.5" />
-        </button>
-      )}
-    </div>
-  );
+interface SidebarProps {
+  /** モバイルのボトムナビ分の余白を追加するか */
+  mobileBottomPad?: boolean;
 }
 
-function ProjectNavItem({ project, active, onEdit, onDelete, onArchive }: {
-  project: Project;
-  active: boolean;
-  onEdit: () => void;
-  onDelete: () => void;
-  onArchive: () => void;
-}) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  return (
-    <div className="group/item relative">
-      <Link
-        href={`/project/${project.id}`}
-        className={cn(
-          "flex items-center gap-2.5 px-3 pl-6 py-[7px] rounded-lg text-sm transition-all duration-150 relative",
-          active
-            ? "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-text)] font-medium"
-            : "text-[var(--foreground-2)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)] hover:translate-x-0.5"
-        )}
-      >
-        {active && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-[var(--sidebar-active-border)]" />}
-        <span className="text-[15px] leading-none flex-shrink-0">{project.icon}</span>
-        <span className="truncate flex-1">{project.name}</span>
-      </Link>
-      <button
-        onClick={e => { e.preventDefault(); setMenuOpen(v => !v); }}
-        className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 p-1 rounded-md hover:bg-[var(--border-2)] text-[var(--muted)] hover:text-[var(--foreground)] transition-all"
-      >
-        <MoreHorizontal className="w-3.5 h-3.5" />
-      </button>
-      {menuOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-          <div
-            ref={menuRef}
-            className="absolute right-0 top-full mt-0.5 z-50 w-36 bg-[var(--background)] border border-[var(--border)] rounded-lg shadow-lg py-1 text-sm"
-          >
-            <button onClick={() => { setMenuOpen(false); onEdit(); }} className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-[var(--sidebar-hover)] text-[var(--foreground)]">
-              <Pencil className="w-3.5 h-3.5" /> 編集
-            </button>
-            <button onClick={() => { setMenuOpen(false); onArchive(); }} className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-[var(--sidebar-hover)] text-[var(--foreground)]">
-              <ArchiveIcon className="w-3.5 h-3.5" /> アーカイブ
-            </button>
-            <div className="my-1 h-px bg-[var(--border)]" />
-            <button onClick={() => { setMenuOpen(false); onDelete(); }} className="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500">
-              <Trash2 className="w-3.5 h-3.5" /> 削除
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-export function Sidebar() {
+export function Sidebar({ mobileBottomPad = false }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { setCommandPaletteOpen } = useUIStore();
@@ -214,11 +249,11 @@ export function Sidebar() {
       </div>
 
       <ScrollArea className="flex-1">
+        {/* スマートリスト */}
         <div className="px-2 space-y-0.5">
           {smartLists.map(({ href, icon, label }) => (
             <NavItem key={href} href={href} icon={icon} label={label} active={pathname === href} />
           ))}
-
           <button
             onClick={() => setCommandPaletteOpen(true)}
             className="group flex w-full items-center gap-2.5 px-3 py-[7px] rounded-lg text-sm transition-all duration-150 text-[var(--foreground-2)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)] hover:translate-x-0.5"
@@ -229,84 +264,114 @@ export function Sidebar() {
           </button>
         </div>
 
+        {/* PARAライブラリ：4カテゴリ全て同じ視覚スタイル */}
         <div className="px-2">
           <SectionLabel label="ライブラリ" />
           <div className="space-y-0.5">
-            <CollapseButton label="プロジェクト" icon={Folder} open={showProjects} onToggle={() => setShowProjects(v => !v)} onAdd={() => openCreate("projects")} />
-            {showProjects && (
-              <div className="space-y-0.5 pb-1">
-                {projects.map(p => (
-                  <ProjectNavItem
-                    key={p.id}
-                    project={p}
-                    active={pathname === `/project/${p.id}`}
-                    onEdit={() => openEdit(p)}
-                    onDelete={() => handleDelete(p)}
-                    onArchive={() => handleArchive(p)}
-                  />
-                ))}
-              </div>
-            )}
+            {/* プロジェクト */}
+            <ParaExpandSection
+              label="プロジェクト"
+              icon={Folder}
+              open={showProjects}
+              onToggle={() => setShowProjects(v => !v)}
+              onAdd={() => openCreate("projects")}
+            >
+              {projects.map(p => (
+                <ProjectSubItem
+                  key={p.id}
+                  project={p}
+                  active={pathname === `/project/${p.id}`}
+                  onEdit={() => openEdit(p)}
+                  onDelete={() => handleDelete(p)}
+                  onArchive={() => handleArchive(p)}
+                />
+              ))}
+              {projects.length === 0 && (
+                <button
+                  onClick={() => openCreate("projects")}
+                  className="flex w-full items-center gap-1.5 pl-7 pr-3 py-1.5 text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                >
+                  <Plus className="w-3 h-3" />新規プロジェクト
+                </button>
+              )}
+            </ParaExpandSection>
 
-            <CollapseButton label="エリア" icon={Globe} open={showAreas} onToggle={() => setShowAreas(v => !v)} onAdd={() => openCreate("areas")} />
-            {showAreas && (
-              <div className="space-y-0.5 pb-1">
-                {areas.map(a => (
-                  <ProjectNavItem
-                    key={a.id}
-                    project={a}
-                    active={pathname === `/area/${a.id}`}
-                    onEdit={() => openEdit(a)}
-                    onDelete={() => handleDelete(a)}
-                    onArchive={() => handleArchive(a)}
-                  />
-                ))}
-              </div>
-            )}
+            {/* エリア */}
+            <ParaExpandSection
+              label="エリア"
+              icon={Globe}
+              open={showAreas}
+              onToggle={() => setShowAreas(v => !v)}
+              onAdd={() => openCreate("areas")}
+            >
+              {areas.map(a => (
+                <ProjectSubItem
+                  key={a.id}
+                  project={a}
+                  active={pathname === `/area/${a.id}`}
+                  onEdit={() => openEdit(a)}
+                  onDelete={() => handleDelete(a)}
+                  onArchive={() => handleArchive(a)}
+                />
+              ))}
+              {areas.length === 0 && (
+                <button
+                  onClick={() => openCreate("areas")}
+                  className="flex w-full items-center gap-1.5 pl-7 pr-3 py-1.5 text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                >
+                  <Plus className="w-3 h-3" />新規エリア
+                </button>
+              )}
+            </ParaExpandSection>
 
-            <NavItem href="/resources" icon={BookOpen} label="リソース" active={pathname === "/resources"} />
-            <NavItem href="/archives" icon={Archive}  label="アーカイブ" active={pathname === "/archives"} />
+            {/* リソース・アーカイブ：プロジェクト/エリアと同じ視覚スタイルの直接リンク */}
+            <ParaLinkItem href="/resources" icon={BookOpen} label="リソース" active={pathname === "/resources"} />
+            <ParaLinkItem href="/archives" icon={Archive} label="アーカイブ" active={pathname === "/archives"} />
           </div>
         </div>
 
+        {/* タグ */}
         {tags.length > 0 && (
           <div className="px-2">
             <SectionLabel label="タグ" />
             <div className="space-y-0.5">
-              <CollapseButton label="すべてのタグ" icon={Tag} open={showTags} onToggle={() => setShowTags(v => !v)} />
-              {showTags && (
-                <div className="space-y-0.5 pb-1">
-                  {tags.map(tag => (
-                    <Link
-                      key={tag.id}
-                      href={`/tags/${encodeURIComponent(tag.name)}`}
-                      className={cn(
-                        "flex w-full items-center gap-2.5 px-3 pl-6 py-[7px] rounded-lg text-sm transition-all duration-150 hover:translate-x-0.5",
-                        pathname === `/tags/${encodeURIComponent(tag.name)}`
-                          ? "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-text)] font-medium"
-                          : "text-[var(--foreground-2)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-                      )}
-                    >
-                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: tag.color }} />
-                      <span className="truncate">#{tag.name}</span>
-                    </Link>
-                  ))}
+              <ParaExpandSection
+                label="すべてのタグ"
+                icon={Tag}
+                open={showTags}
+                onToggle={() => setShowTags(v => !v)}
+              >
+                {tags.map(tag => (
                   <Link
-                    href="/tags"
-                    className="flex w-full items-center gap-2.5 px-3 pl-6 py-[7px] rounded-lg text-sm text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)] transition-all duration-150"
+                    key={tag.id}
+                    href={`/tags/${encodeURIComponent(tag.name)}`}
+                    className={cn(
+                      "flex w-full items-center gap-2.5 px-3 pl-7 py-[6px] rounded-lg text-[13px] transition-all duration-150 hover:translate-x-0.5",
+                      pathname === `/tags/${encodeURIComponent(tag.name)}`
+                        ? "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-text)] font-medium"
+                        : "text-[var(--foreground-2)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+                    )}
                   >
-                    <Tag className="w-[13px] h-[13px]" />
-                    <span>タグを管理...</span>
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: tag.color }} />
+                    <span className="truncate">#{tag.name}</span>
                   </Link>
-                </div>
-              )}
+                ))}
+                <Link
+                  href="/tags"
+                  className="flex w-full items-center gap-1.5 pl-7 pr-3 py-1.5 text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                >
+                  <Tag className="w-3 h-3" />タグを管理...
+                </Link>
+              </ParaExpandSection>
             </div>
           </div>
         )}
 
-        <div className="h-4" />
+        {/* モバイルボトムナビ分の余白 */}
+        <div className={mobileBottomPad ? "h-20" : "h-4"} />
       </ScrollArea>
 
+      {/* Footer */}
       <div className="px-2 py-2 border-t border-[var(--border)] flex-shrink-0 space-y-0.5">
         <NavItem href="/settings" icon={Settings} label="設定" active={pathname === "/settings"} />
         <SidebarThemeToggle />

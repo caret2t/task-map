@@ -68,10 +68,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Sidebar />
         </div>
 
-        {/* Mobile Sidebar Overlay */}
+        {/* Mobile Sidebar Overlay — ボトムナビ(h-16)分上に止める */}
         {sidebarOpen && (
-          <div className="lg:hidden fixed inset-0 z-40 flex">
-            <div className="w-64 relative z-50">
+          <div className="lg:hidden fixed inset-x-0 top-0 z-40 flex" style={{ bottom: "calc(4rem + env(safe-area-inset-bottom))" }}>
+            <div className="w-64 relative z-50 h-full">
               <Sidebar />
             </div>
             <div className="flex-1 bg-black/30" onClick={toggleSidebar} />
