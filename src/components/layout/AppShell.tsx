@@ -6,6 +6,7 @@ import { MobileNav } from "./MobileNav";
 import { ThemeProvider } from "./ThemeProvider";
 import { CommandPalette } from "@/components/search/CommandPalette";
 import { TaskDetailPane } from "@/components/task/TaskDetailPane";
+import { MobileTaskSheet } from "@/components/task/MobileTaskSheet";
 import { FocusMode } from "@/components/focus/FocusMode";
 import { NotificationSetup } from "./NotificationSetup";
 import { useTaskStore } from "@/store/taskStore";
@@ -13,32 +14,24 @@ import { useUIStore, type ThemeMode } from "@/store/uiStore";
 import { Sun, Moon, Monitor, X, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const THEME_OPTIONS: { value: ThemeMode; icon: React.ElementType; label: string }[] = [
-  { value: "light", icon: Sun, label: "ライト" },
-  { value: "system", icon: Monitor, label: "自動" },
-  { value: "dark", icon: Moon, label: "ダーク" },
-];
+const THEME_CYCLE: ThemeMode[] = ["light", "system", "dark"];
+const THEME_ICONS: Record<ThemeMode, React.ElementType> = { light: Sun, system: Monitor, dark: Moon };
 
-function ThemeToggle() {
+// モバイル用シングルトグル
+function MobileThemeToggle() {
   const { theme, setTheme } = useUIStore();
+  const Icon = THEME_ICONS[theme];
+  const next = () => {
+    const idx = THEME_CYCLE.indexOf(theme);
+    setTheme(THEME_CYCLE[(idx + 1) % THEME_CYCLE.length]);
+  };
   return (
-    <div className="flex items-center gap-0.5 bg-[var(--surface-2)] rounded-lg p-0.5">
-      {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
-        <button
-          key={value}
-          onClick={() => setTheme(value)}
-          title={label}
-          className={cn(
-            "p-1.5 rounded-md transition-colors",
-            theme === value
-              ? "bg-[var(--background)] text-[var(--foreground)] shadow-sm"
-              : "text-[var(--muted)] hover:text-[var(--foreground)]"
-          )}
-        >
-          <Icon className="w-3.5 h-3.5" />
-        </button>
-      ))}
-    </div>
+    <button
+      onClick={next}
+      className="w-8 h-8 flex items-center justify-center rounded-xl bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+    >
+      <Icon className="w-4 h-4" />
+    </button>
   );
 }
 
@@ -89,11 +82,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex flex-1 overflow-hidden flex-col">
           {/* Mobile header */}
           <div className="lg:hidden flex-shrink-0 bg-[var(--background)] border-b border-[var(--border)] flex items-center justify-between px-4 h-12 z-30">
-            <button onClick={toggleSidebar} className="p-1 text-[var(--muted)]">
-              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <button
+              onClick={toggleSidebar}
+              className="w-8 h-8 flex items-center justify-center rounded-xl bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+            >
+              {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
-            <span className="font-semibold text-sm">TaskMap</span>
-            <ThemeToggle />
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 16 16">
+                  <path d="M3 4h10M3 8h7M3 12h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <span className="font-bold text-sm">TaskMap</span>
+            </div>
+            <MobileThemeToggle />
           </div>
 
           {/* 3-column layout */}
@@ -115,6 +118,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Overlays */}
         <CommandPalette />
         <FocusMode />
+        <MobileTaskSheet />
         <NotificationSetup />
 
         {/* Mobile nav */}

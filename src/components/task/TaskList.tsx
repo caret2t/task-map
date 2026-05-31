@@ -122,28 +122,54 @@ export function TaskList({
     return m > 0 ? `${h}h${m}m` : `${h}h`;
   };
 
+  // 進捗リング用 SVG 計算
+  const RING_R = 16;
+  const RING_CIRC = 2 * Math.PI * RING_R;
+  const ringOffset = displayTasks.length > 0 ? RING_CIRC * (1 - progressPct / 100) : RING_CIRC;
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full page-enter">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-[var(--border)] flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <h1 className="text-base font-semibold">{title}</h1>
-          <span className="text-xs text-[var(--muted)]">{tasks.length}件</span>
-        </div>
-        {tasks.length > 0 && (
-          <div className="mt-2 space-y-1">
-            <div className="flex items-center justify-between text-xs text-[var(--muted)]">
-              <span>完了 {doneCount}/{tasks.length}件・{progressPct}%</span>
-              {totalMinutes > 0 && <span>⏱ {formatMinutes(totalMinutes)}</span>}
+      <div className="px-5 py-4 border-b border-[var(--border)] flex-shrink-0">
+        <div className="flex items-center gap-3">
+          {displayTasks.length > 0 && (
+            <div className="relative w-10 h-10 flex-shrink-0">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 40 40">
+                <circle cx="20" cy="20" r={RING_R} fill="none" stroke="var(--border)" strokeWidth="3" />
+                <circle
+                  cx="20" cy="20" r={RING_R}
+                  fill="none"
+                  stroke="var(--primary)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeDasharray={RING_CIRC}
+                  strokeDashoffset={ringOffset}
+                  className="transition-all duration-700"
+                />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-[var(--foreground-2)]">
+                {progressPct}%
+              </span>
             </div>
-            <div className="h-1 bg-[var(--surface-2)] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[var(--primary)] rounded-full transition-all duration-500"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-bold tracking-tight truncate">{title}</h1>
+            {displayTasks.length > 0 && (
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex-1 h-1.5 bg-[var(--border)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[var(--primary)] rounded-full transition-all duration-700"
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+                <span className="text-[11px] text-[var(--muted)] whitespace-nowrap">
+                  {doneCount}/{displayTasks.length} 完了
+                  {totalMinutes > 0 && ` · ⏱ ${formatMinutes(totalMinutes)}`}
+                </span>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Inline add task — always visible at top */}
@@ -177,9 +203,18 @@ export function TaskList({
         </DndContext>
 
         {displayTasks.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-40 text-[var(--muted)]">
-            <p className="text-sm">タスクがありません</p>
-            <p className="text-xs mt-1">上の入力欄からタスクを追加できます</p>
+          <div className="flex flex-col items-center justify-center h-64 gap-3 px-6">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--border-2)] flex items-center justify-center">
+              <svg className="w-8 h-8 text-[var(--muted-2)]" fill="none" viewBox="0 0 32 32">
+                <path d="M8 10h16M8 16h10M8 22h7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                <circle cx="24" cy="24" r="6" fill="var(--background)" stroke="var(--primary)" strokeWidth="1.8"/>
+                <path d="M22 24l1.5 1.5L26 22" stroke="var(--primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-[var(--foreground-2)]">タスクがありません</p>
+              <p className="text-xs text-[var(--muted)] mt-1">上の入力欄からタスクを追加しましょう</p>
+            </div>
           </div>
         )}
       </div>

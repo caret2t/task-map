@@ -116,7 +116,7 @@ export function InlineAddTask({ defaultStatus = "inbox", defaultProjectId = null
             onChange={e => setTitle(e.target.value)}
             onFocus={() => setExpanded(true)}
             onKeyDown={handleKeyDown}
-            placeholder="タスクを追加（:#!^/でショートカット）"
+            placeholder="タスクを入力..."
             className="flex-1 text-sm bg-transparent outline-none placeholder:text-[var(--muted)] min-w-0"
           />
           <button
