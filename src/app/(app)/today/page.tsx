@@ -5,5 +5,5 @@ import { useTodayTasks } from "@/hooks/useTasks";
 
 export default function TodayPage() {
   const tasks = useTodayTasks();
-  return <TaskList tasks={tasks ?? []} title="📅 今日" defaultStatus="todo" />;
+  return <TaskList tasks={tasks ?? []} title="📅 今日" />;
 }

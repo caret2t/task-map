@@ -95,6 +95,8 @@ export async function createTask(partial: Partial<Task> & { title: string }): Pr
     priority: partial.priority ?? 0,
     parentId: partial.parentId ?? null,
     subtasks: partial.subtasks ?? [],
+    workType: partial.workType ?? null,
+    estimatedMinutes: partial.estimatedMinutes ?? null,
     createdAt: now,
     updatedAt: now,
     userId: partial.userId ?? "local",

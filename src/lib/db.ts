@@ -14,6 +14,17 @@ class TaskMapDB extends Dexie {
       projects: "id, paraCategory, status, createdAt, userId",
       tags: "id, name, userId, createdAt",
     });
+    this.version(2).stores({
+      tasks:
+        "id, status, projectId, areaId, dueDate, scheduledDate, priority, workType, createdAt, updatedAt, userId",
+      projects: "id, paraCategory, status, createdAt, userId",
+      tags: "id, name, userId, createdAt",
+    }).upgrade((tx) => {
+      return tx.table("tasks").toCollection().modify((task) => {
+        if (task.workType === undefined) task.workType = null;
+        if (task.estimatedMinutes === undefined) task.estimatedMinutes = null;
+      });
+    });
   }
 }
 

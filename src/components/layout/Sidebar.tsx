@@ -15,7 +15,11 @@ import {
   Tag,
   ChevronRight,
   ChevronDown,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
+import type { ThemeMode } from "@/store/uiStore";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/store/uiStore";
 import { useProjectsByCategory } from "@/hooks/useProjects";
@@ -53,6 +57,38 @@ function NavItem({
       <Icon className="w-4 h-4 flex-shrink-0" />
       {label}
     </Link>
+  );
+}
+
+const THEME_OPTIONS: { value: ThemeMode; icon: React.ElementType; label: string }[] = [
+  { value: "light", icon: Sun, label: "ライト" },
+  { value: "system", icon: Monitor, label: "自動" },
+  { value: "dark", icon: Moon, label: "ダーク" },
+];
+
+function SidebarThemeToggle() {
+  const { theme, setTheme } = useUIStore();
+  return (
+    <div className="px-3 flex items-center gap-1.5">
+      <span className="text-xs text-[var(--muted)] flex-1">外観</span>
+      <div className="flex items-center gap-0.5 bg-[var(--surface-2)] rounded-lg p-0.5">
+        {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
+          <button
+            key={value}
+            onClick={() => setTheme(value)}
+            title={label}
+            className={cn(
+              "p-1.5 rounded-md transition-colors",
+              theme === value
+                ? "bg-[var(--background)] text-[var(--foreground)] shadow-sm"
+                : "text-[var(--muted)] hover:text-[var(--foreground)]"
+            )}
+          >
+            <Icon className="w-3.5 h-3.5" />
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -177,9 +213,10 @@ export function Sidebar() {
         )}
       </ScrollArea>
 
-      {/* Settings */}
-      <div className="p-2 border-t border-[var(--border)] flex-shrink-0">
+      {/* Settings + Theme */}
+      <div className="p-2 border-t border-[var(--border)] flex-shrink-0 space-y-2">
         <NavItem href="/settings" icon={Settings} label="設定" active={pathname === "/settings"} />
+        <SidebarThemeToggle />
       </div>
     </div>
   );

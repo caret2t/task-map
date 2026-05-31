@@ -14,8 +14,6 @@ export default function AreaPage({ params }: { params: Promise<{ id: string }> }
     <TaskList
       tasks={tasks ?? []}
       title={area ? `${area.icon} ${area.name}` : "エリア"}
-      defaultStatus="todo"
-      defaultProjectId={id}
     />
   );
 }

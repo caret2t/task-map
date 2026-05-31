@@ -14,8 +14,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     <TaskList
       tasks={tasks ?? []}
       title={project ? `${project.icon} ${project.name}` : "プロジェクト"}
-      defaultStatus="todo"
-      defaultProjectId={id}
     />
   );
 }

@@ -1,3 +1,5 @@
+export type WorkType = "focus" | "shallow" | "meeting" | "admin" | "review" | null;
+
 export interface Task {
   id: string;
   title: string;
@@ -12,6 +14,8 @@ export interface Task {
   priority: 0 | 1 | 2 | 3;
   parentId: string | null;
   subtasks: Subtask[];
+  workType: WorkType;
+  estimatedMinutes: number | null;
   createdAt: Date;
   updatedAt: Date;
   userId: string;
