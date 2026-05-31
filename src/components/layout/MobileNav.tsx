@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { List, CalendarDays, Menu, Plus } from "lucide-react";
+import { List, CalendarDays, Settings, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/store/uiStore";
 
 export function MobileNav() {
   const pathname = usePathname();
-  const { setInlineAddOpen, toggleSidebar } = useUIStore();
+  const { setInlineAddOpen } = useUIStore();
 
   const isTaskActive =
     ["/inbox", "/today", "/upcoming", "/search"].includes(pathname) ||
@@ -70,16 +70,13 @@ export function MobileNav() {
           active={pathname === "/inbox"}
         />
 
-        {/* メニュー */}
-        <button
-          onClick={toggleSidebar}
-          className="flex flex-col items-center gap-0.5 py-1 min-w-[3rem] transition-transform active:scale-95"
-        >
-          <span className="flex items-center justify-center w-10 h-6 rounded-full">
-            <Menu className="w-5 h-5 text-[var(--muted)]" />
-          </span>
-          <span className="text-[10px] font-medium text-[var(--muted)]">メニュー</span>
-        </button>
+        {/* 設定 */}
+        <NavTab
+          href="/settings"
+          icon={Settings}
+          label="設定"
+          active={pathname === "/settings"}
+        />
       </div>
     </nav>
   );
